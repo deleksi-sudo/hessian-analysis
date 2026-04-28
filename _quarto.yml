@@ -1,0 +1,8 @@
+project:
+  title: "Hessova matica: hľadanie extrémov funkcií viacerých premenných"
+  render:
+    - report.qmd
+    - presentation.qmd
+
+bibliography: references.bib
+lang: sk

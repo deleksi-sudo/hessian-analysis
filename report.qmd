@@ -1,0 +1,170 @@
+---
+title: "Hessova matica: hľadanie extrémov funkcií viacerých premenných"
+author: "Nazar Fomin"
+date: today
+institute: "STU Bratislava – MPM"
+format:
+  html:
+    toc: true
+  pdf:
+    toc: true
+execute:
+  echo: false
+  warning: false
+jupyter: python3
+bibliography: references.bib
+lang: sk
+---
+
+```{python}
+#| include: false
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from IPython.display import display, Markdown
+```
+
+## Úvod
+
+Hessova matica je symetrická matica druhých parciálnych derivácií funkcie viacerých premenných.
+Pomenovaná po nemeckom matematikovi Ludwigovi Ottovi Hessovi (1811–1874), táto matica nesie informáciu o lokálnej krivosti funkcie v danom bode.
+Používa sa na klasifikáciu kritických bodov — teda na určenie, či ide o minimum, maximum alebo sedlový bod.
+V tejto správe ukážeme jej použitie na konkrétnom príklade s vizualizáciou a porovnaním viacerých funkcií [@stewart2015].
+
+Praktické využitie Hessovej matice sa nachádza v strojovom učení, matematickej ekonómii aj inžinierstve.
+Na implementáciu využijeme knižnicu SymPy pre symbolické výpočty a Matplotlib pre grafy [@sympy2023].
+
+## Teoretický základ
+
+### Gradient a kritické body
+
+Gradient funkcie $f(x, y)$ je vektor prvých parciálnych derivácií:
+
+$$\nabla f = \left(\frac{\partial f}{\partial x},\ \frac{\partial f}{\partial y}\right)$$
+
+Kritický bod je taký bod $(x_0, y_0)$, kde platí $\nabla f(x_0, y_0) = \mathbf{0}$, teda obidve parciálne derivácie sú nulové.
+Kritické body sú kandidátmi na lokálne extrémy, no môžu byť aj sedlovými bodmi.
+
+### Hessova matica
+
+Pre funkciu $f(x, y)$ je Hessova matica definovaná ako:
+
+$$H(f) = \begin{pmatrix} \dfrac{\partial^2 f}{\partial x^2} & \dfrac{\partial^2 f}{\partial x\,\partial y} \\[10pt] \dfrac{\partial^2 f}{\partial y\,\partial x} & \dfrac{\partial^2 f}{\partial y^2} \end{pmatrix}$$
+
+Matica je symetrická, pretože pre spojité derivácie platí $\frac{\partial^2 f}{\partial x \partial y} = \frac{\partial^2 f}{\partial y \partial x}$.
+
+### Klasifikácia kritických bodov
+
+Kritický bod klasifikujeme pomocou determinantu $D = \det(H)$ a hodnoty $H_{11} = \frac{\partial^2 f}{\partial x^2}$:
+
+| Podmienka | Klasifikácia |
+|:----------|:------------|
+| $D > 0$ a $H_{11} > 0$ | Lokálne minimum |
+| $D > 0$ a $H_{11} < 0$ | Lokálne maximum |
+| $D < 0$ | Sedlový bod |
+| $D = 0$ | Neurčitý prípad |
+
+### Definitnosť matice
+
+Klasifikácia kritického bodu súvisí aj s definitnosťou Hessovej matice:
+
+- **Pozitívne definitná** matica (všetky vlastné čísla kladné) → lokálne **minimum**
+- **Negatívne definitná** matica (všetky vlastné čísla záporné) → lokálne **maximum**
+- **Indefinitná** matica (vlastné čísla rôznych znamienok) → **sedlový bod**
+
+Pre maticu $2 \times 2$ je podmienka pozitívnej definitnosti ekvivalentná s $D > 0$ a $H_{11} > 0$.
+Toto je práve klasifikačné kritérium z predchádzajúcej tabuľky, takže oba pohľady sú totožné.
+
+## Príklad: $f(x, y) = x^2 + y^2$
+
+Uvažujme najjednoduchšiu kvadratickú funkciu dvoch premenných:
+
+$$f(x, y) = x^2 + y^2$$
+
+**Krok 1 — gradient:**
+
+$$\nabla f = (2x,\ 2y) = \mathbf{0} \quad \Rightarrow \quad x = 0,\ y = 0$$
+
+Jediný kritický bod je $(0, 0)$.
+
+**Krok 2 — Hessova matica:**
+
+$$H = \begin{pmatrix} 2 & 0 \\ 0 & 2 \end{pmatrix}$$
+
+**Krok 3 — klasifikácia:**
+
+$$D = \det(H) = 4 > 0, \quad H_{11} = 2 > 0 \quad \Rightarrow \quad \textbf{lokálne minimum}$$
+
+Graf funkcie nižšie ukazuje typický tvar paraboloidu s minimom v počiatku.
+
+```{python}
+#| label: fig-priklad
+#| fig-cap: "Graf funkcie $f(x,y) = x^2 + y^2$ — rotačný paraboloid s minimom v bode (0, 0)"
+
+x = np.linspace(-3, 3, 100)
+y = np.linspace(-3, 3, 100)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + Y**2
+
+fig = plt.figure(figsize=(9, 7))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, cmap='viridis')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('f(x,y)')
+ax.set_title('$f(x,y) = x^2 + y^2$')
+plt.tight_layout()
+plt.show()
+```
+
+## Tabuľka kritických bodov
+
+Nasledujúca tabuľka obsahuje prehľad kritických bodov pre niekoľko vybraných funkcií.
+Pre každú funkciu sú uvedené súradnice kritického bodu, hodnota determinantu Hessovej matice, hodnota $H_{11}$ a výsledná klasifikácia.
+
+```{python}
+#| label: tbl-kriticke-body
+#| tbl-cap: "Prehľad kritických bodov vybraných funkcií"
+
+df = pd.read_csv('data/critical_points.csv')
+df.columns = ['Funkcia', 'x*', 'y*', 'det(H)', 'H₁₁', 'Klasifikácia']
+display(Markdown(df.to_markdown(index=False, floatfmt='.1f')))
+```
+
+Z tabuľky vidíme, že väčšina analyzovaných funkcií má lokálne minimum.
+Sedlový bod nastáva pri funkcii $x^2 - y^2$, kde $D < 0$ — funkcia rastie v smere $x$ a klesá v smere $y$.
+Lokálne maximum sa vyskytuje pri funkcii $-x^2 - y^2 + 4x + 6y$, kde obe vlastné čísla Hessovej matice sú záporné.
+Pre každú funkciu v tabuľke sme overili klasifikáciu manuálnym výpočtom aj pomocou SymPy.
+
+### Distribúcia typov kritických bodov
+
+```{python}
+#| label: fig-bar
+#| fig-cap: "Počet kritických bodov podľa typu klasifikácie"
+
+pocty = df['Klasifikácia'].value_counts()
+farby = ['#1976D2', '#C62828', '#F57C00', '#757575']
+
+fig, ax = plt.subplots(figsize=(9, 6))
+ax.bar(pocty.index, pocty.values, color=farby[:len(pocty)], width=0.5)
+ax.set_xlabel('Typ kritického bodu')
+ax.set_ylabel('Počet')
+ax.set_title('Rozdelenie kritických bodov')
+for i, v in enumerate(pocty.values):
+    ax.text(i, v + 0.05, str(v), ha='center', fontweight='bold')
+plt.tight_layout()
+plt.show()
+```
+
+## Záver
+
+V tejto správe sme ukázali, ako sa Hessova matica používa na klasifikáciu kritických bodov funkcií dvoch premenných.
+Na príklade $f(x,y) = x^2 + y^2$ sme krok za krokom vypočítali gradient, Hessovu maticu a overili, že metóda správne identifikuje lokálne minimum v počiatku.
+Tabuľka a graf ukazujú, že rovnaký postup funguje pre rôzne typy funkcií.
+Podrobnejší popis implementácie je dostupný v knižnici SymPy [@sympy2023].
+
+## Literatúra
+
+::: {#refs}
+:::

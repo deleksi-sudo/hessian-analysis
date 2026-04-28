@@ -1,0 +1,6 @@
+funkcia,kriticky_bod_x,kriticky_bod_y,det_H,H11,klasifikacia
+x^2+y^2,0,0,4,2,lokálne minimum
+x^2+y^2+2x-4y+5,-1,2,4,2,lokálne minimum
+x^2-y^2,0,0,-4,2,sedlový bod
+-x^2-y^2+4x+6y,2,3,4,-2,lokálne maximum
+2x^2+y^2-2x+y-1,0.5,-0.5,8,4,lokálne minimum
