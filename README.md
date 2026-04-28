@@ -1,4 +1,4 @@
-# Hessova matica — Hľadanie extrémov funkcií viacerých premenných
+# Hessova matica - Hľadanie extrémov funkcií viacerých premenných
 
 A student project for the **MPM** programme at **STU Bratislava**.  
 Covers the Hessian matrix, classification of critical points, and a brief look at Newton's optimization method.
