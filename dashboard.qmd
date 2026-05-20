@@ -1,0 +1,219 @@
+---
+title: "Hessova matica – Dashboard"
+author: "Nazar Fomin"
+format:
+  dashboard:
+    theme: cosmo
+    nav-buttons:
+      - href: report.html
+        text: "Správa"
+      - href: presentation.html
+        text: "Prezentácia"
+execute:
+  echo: false
+  warning: false
+jupyter: python3
+---
+
+# Prehľad
+
+## Row {height=20%}
+
+```{python}
+#| content: valuebox
+#| title: "Počet príkladov"
+#| icon: calculator
+#| color: primary
+1
+```
+
+```{python}
+#| content: valuebox
+#| title: "Kritické body"
+#| icon: geo-alt
+#| color: success
+1
+```
+
+```{python}
+#| content: valuebox
+#| title: "Klasifikácia"
+#| icon: check-circle
+#| color: info
+"Minimum"
+```
+
+## Row {height=80%}
+
+### Column {width=50%}
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+x = np.linspace(-3, 3, 60)
+y = np.linspace(-3, 3, 60)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + Y**2
+
+fig = plt.figure(figsize=(5, 4))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, cmap='viridis', alpha=0.85, linewidth=0)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('f(x,y)')
+ax.set_title('Povrch f(x,y) = x² + y²')
+plt.tight_layout()
+plt.show();
+```
+
+### Column {width=50%}
+
+```{python}
+fig, ax = plt.subplots(figsize=(5, 4))
+cp = ax.contourf(X, Y, Z, levels=15, cmap='coolwarm')
+ax.contour(X, Y, Z, levels=15, colors='white', linewidths=0.5, alpha=0.4)
+plt.colorbar(cp, ax=ax)
+ax.plot(0, 0, 'ro', markersize=10, label='Kritický bod (0, 0)')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Vrstevnicový graf f(x,y) = x² + y²')
+ax.legend(loc='upper right')
+plt.tight_layout()
+plt.show();
+```
+
+# Klasifikácia
+
+## Row {height=30%}
+
+```{python}
+from IPython.display import display, Markdown
+
+tabulka = """
+| Podmienka | Záver |
+|-----------|-------|
+| det H > 0 a H₁₁ > 0 | Lokálne **minimum** |
+| det H > 0 a H₁₁ < 0 | Lokálne **maximum** |
+| det H < 0 | **Sedlový bod** |
+| det H = 0 | Neurčitý prípad |
+"""
+display(Markdown(tabulka))
+```
+
+## Row {height=70%}
+
+### Column {width=50%}
+
+```{python}
+import pandas as pd
+
+df = pd.read_csv('data/critical_points.csv')
+df_display = df.rename(columns={
+    'funkcia': 'Funkcia',
+    'kriticky_bod_x': 'x*',
+    'kriticky_bod_y': 'y*',
+    'det_H': 'det H',
+    'H11': 'H₁₁',
+    'klasifikacia': 'Klasifikácia'
+})
+display(Markdown(df_display.to_markdown(index=False)))
+```
+
+### Column {width=50%}
+
+```{python}
+klasif_counts = df['klasifikacia'].value_counts()
+
+color_map = {
+    'lokálne minimum': 'steelblue',
+    'lokálne maximum': 'crimson',
+    'sedlový bod': 'seagreen'
+}
+colors = [color_map.get(k, 'gray') for k in klasif_counts.index]
+
+fig, ax = plt.subplots(figsize=(5, 3))
+bars = ax.barh(klasif_counts.index, klasif_counts.values, color=colors, edgecolor='white', height=0.5)
+ax.set_xlabel('Počet')
+ax.set_title('Typy klasifikácií kritických bodov')
+for bar, val in zip(bars, klasif_counts.values):
+    ax.text(val + 0.05, bar.get_y() + bar.get_height() / 2,
+            str(val), va='center', fontsize=10)
+ax.set_xlim(0, klasif_counts.max() + 0.8)
+plt.tight_layout()
+plt.show();
+```
+
+# Optimalizácia
+
+## Row {height=25%}
+
+```{python}
+display(Markdown("""
+**Newtonova metóda** pre hľadanie minima funkcie viacerých premenných využíva druhé derivácie.
+Iteračný vzorec je:
+
+$$x^{k+1} = x^k - H(f)^{-1} \\nabla f(x^k)$$
+
+kde $H(f)$ je Hessova matica a $\\nabla f$ je gradient funkcie.
+Metóda má kvadratickú konvergenciu v blízkosti minima, zatiaľ čo gradientný zostup konverguje len lineárne.
+"""))
+```
+
+## Row {height=75%}
+
+```{python}
+def f2(x, y):
+    return x**2 + y**2 + 2*x - 4*y + 5
+
+def grad_f2(x, y):
+    return np.array([2*x + 2, 2*y - 4])
+
+def hess_inv_f2():
+    return np.array([[0.5, 0], [0, 0.5]])
+
+x2 = np.linspace(-3, 4, 120)
+y2 = np.linspace(-1, 6, 120)
+X2, Y2 = np.meshgrid(x2, y2)
+Z2 = f2(X2, Y2)
+
+# Gradient descent
+alpha = 0.25
+steps = 12
+gd_path = [(2.0, 4.5)]
+cx, cy = 2.0, 4.5
+for _ in range(steps):
+    g = grad_f2(cx, cy)
+    cx -= alpha * g[0]
+    cy -= alpha * g[1]
+    gd_path.append((cx, cy))
+
+# Newton (1 step from same start)
+nx, ny = 2.0, 4.5
+Hi = hess_inv_f2()
+g = grad_f2(nx, ny)
+step = Hi @ g
+newton_path = [(nx, ny), (nx - step[0], ny - step[1])]
+
+fig, ax = plt.subplots(figsize=(7, 4))
+cp2 = ax.contourf(X2, Y2, Z2, levels=20, cmap='Blues', alpha=0.7)
+ax.contour(X2, Y2, Z2, levels=20, colors='gray', linewidths=0.4, alpha=0.5)
+plt.colorbar(cp2, ax=ax)
+
+gx, gy = zip(*gd_path)
+ax.plot(gx, gy, 'b-o', markersize=4, linewidth=1.5, label='Gradientný zostup')
+
+nxp, nyp = zip(*newton_path)
+ax.plot(nxp, nyp, 'g-o', markersize=6, linewidth=2, label='Newtonova metóda')
+
+ax.plot(-1, 2, 'r*', markersize=14, label='Minimum (−1, 2)')
+ax.plot(2, 4.5, 'kD', markersize=8, label='Štart (2; 4,5)')
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Konvergencia: Gradientný zostup vs. Newtonova metóda\nf(x,y) = x² + y² + 2x − 4y + 5')
+ax.legend(loc='upper right', fontsize=8)
+plt.tight_layout()
+plt.show();
+```
