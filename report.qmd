@@ -96,7 +96,7 @@ $$H = \begin{pmatrix} 2 & 0 \\ 0 & 2 \end{pmatrix}$$
 
 $$D = \det(H) = 4 > 0, \quad H_{11} = 2 > 0 \quad \Rightarrow \quad \textbf{lokálne minimum}$$
 
-Graf funkcie nižšie ukazuje typický tvar paraboloidu s minimom v počiatku.
+Graf funkcie (@fig-priklad) ukazuje typický tvar paraboloidu s minimom v počiatku.
 
 ```{python}
 #| label: fig-priklad
@@ -120,7 +120,7 @@ plt.show()
 
 ## Tabuľka kritických bodov
 
-Nasledujúca tabuľka obsahuje prehľad kritických bodov pre niekoľko vybraných funkcií.
+Nasledujúca tabuľka (@tbl-kriticke-body) obsahuje prehľad kritických bodov pre niekoľko vybraných funkcií.
 Pre každú funkciu sú uvedené súradnice kritického bodu, hodnota determinantu Hessovej matice, hodnota $H_{11}$ a výsledná klasifikácia.
 
 ```{python}
@@ -132,7 +132,7 @@ df.columns = ['Funkcia', 'x*', 'y*', 'det(H)', 'H₁₁', 'Klasifikácia']
 display(Markdown(df.to_markdown(index=False, floatfmt='.1f')))
 ```
 
-Z tabuľky vidíme, že väčšina analyzovaných funkcií má lokálne minimum.
+Z tabuľky (@tbl-kriticke-body) a grafu (@fig-bar) vidíme, že väčšina analyzovaných funkcií má lokálne minimum.
 Sedlový bod nastáva pri funkcii $x^2 - y^2$, kde $D < 0$ — funkcia rastie v smere $x$ a klesá v smere $y$.
 Lokálne maximum sa vyskytuje pri funkcii $-x^2 - y^2 + 4x + 6y$, kde obe vlastné čísla Hessovej matice sú záporné.
 Pre každú funkciu v tabuľke sme overili klasifikáciu manuálnym výpočtom aj pomocou SymPy.
